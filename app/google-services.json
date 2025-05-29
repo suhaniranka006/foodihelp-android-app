@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "890560854235",
+    "project_id": "foodihelp-app",
+    "storage_bucket": "foodihelp-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:890560854235:android:45bc9ac7de3acb422434fe",
+        "android_client_info": {
+          "package_name": "com.example.foodihelp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPBC742TZtdB9qjCbv0f7HZ1BrIeGKe-A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
