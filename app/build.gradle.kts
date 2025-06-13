@@ -1,3 +1,6 @@
+import org.gradle.kotlin.dsl.annotationProcessor
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -59,6 +62,13 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
     implementation("com.google.firebase:firebase-analytics")
+
+    implementation("com.cloudinary:cloudinary-android:2.3.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
 // For image loading from URI (optional, but Glide/Coil are good)
     implementation("io.coil-kt:coil:2.6.0") // Coil example, Glide is also popular

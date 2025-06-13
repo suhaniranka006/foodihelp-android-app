@@ -4,47 +4,59 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
-    android:orientation="vertical"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_horizontal"
     tools:context=".NGOLoginActivity">
 
-
-
-    <com.google.android.material.textfield.TextInputEditText
-        android:layout_width="wrap_content"
-        android:id="@+id/username"
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="40dp"
         android:layout_marginTop="70dp"
-        android:layout_gravity="center"
-        android:hint="UserName" />
+        android:hint="User Name">
 
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:layout_width="wrap_content"
-        android:id="@+id/ngoname"
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="40dp"
-        android:layout_gravity="center"
-        android:hint="NGO Name" />
+        android:layout_marginTop="16dp"
+        android:hint="NGO Name">
 
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/ngoname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/password_edit_text"
-        android:layout_width="wrap_content"
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="40dp"
-        android:layout_gravity="center"
-        android:hint="Password"
-        android:inputType="textPassword" />
+        android:layout_marginTop="16dp"
+        android:hint="Password">
 
-
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/password_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:textSize="20sp"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="40dp"
-        android:text="Search nearby helps" />
-
+        android:text="Search Nearby Helps"
+        android:textSize="20sp"
+        android:layout_marginTop="32dp"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="12dp"/>
 </LinearLayout>

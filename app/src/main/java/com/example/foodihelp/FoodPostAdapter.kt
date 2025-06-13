@@ -31,11 +31,11 @@ class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
 
     // ViewHolder class: Holds references to the views for each item
     inner class FoodPostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageViewFood: ImageView = itemView.findViewById(R.id.imageViewItemFood)
-        val textViewDescription: TextView = itemView.findViewById(R.id.textViewItemDescription)
-        val textViewQuantity: TextView = itemView.findViewById(R.id.textViewItemQuantity)
-        val textViewAddress: TextView = itemView.findViewById(R.id.textViewItemAddress)
-        val textViewExpiry: TextView = itemView.findViewById(R.id.textViewItemExpiry)
+        val imageViewFood: ImageView = itemView.findViewById(R.id.imageViewItemFood)  ///Image of the food
+        val textViewDescription: TextView = itemView.findViewById(R.id.textViewItemDescription) //Food description
+        val textViewQuantity: TextView = itemView.findViewById(R.id.textViewItemQuantity) //Quantity of food
+        val textViewAddress: TextView = itemView.findViewById(R.id.textViewItemAddress)  //Pickup location
+        val textViewExpiry: TextView = itemView.findViewById(R.id.textViewItemExpiry)  //Human-readable expiry date
 
         init {
             itemView.setOnClickListener {
@@ -47,6 +47,9 @@ class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
         }
     }
 
+
+    //Inflates each row (item_food_post.xml) into a ViewHolder
+
     // Called when RecyclerView needs a new ViewHolder (a new item layout)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FoodPostViewHolder {
         val itemView = LayoutInflater.from(parent.context)
@@ -54,6 +57,8 @@ class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
         return FoodPostViewHolder(itemView)
     }
 
+
+    //Binds data from each FoodPost to the UI widgets
     // Called by RecyclerView to display the data at the specified position
     override fun onBindViewHolder(holder: FoodPostViewHolder, position: Int) {
         val currentPost = foodPosts[position]
@@ -64,6 +69,8 @@ class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
 
         // Load image using Coil (or Glide)
         if (!currentPost.imageUrl.isNullOrEmpty()) {
+
+            // Uses Coil to load images asynchronously from imageUrl:
             holder.imageViewFood.load(currentPost.imageUrl) {
                 placeholder(R.drawable.ic_placeholder_image) // Add a placeholder drawable
                 error(R.drawable.ic_error_image) // Add an error drawable
@@ -99,6 +106,8 @@ class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
     // Returns the total number of items in the list
     override fun getItemCount() = foodPosts.size
 
+
+    //Replaces old list with new list and refreshes the view
     // Function to update the list of food posts in the adapter
     fun updateData(newFoodPosts: List<FoodPost>) {
         foodPosts = newFoodPosts

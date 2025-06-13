@@ -7,6 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.foodihelp.databinding.ActivityFeedBinding
+
+//Firestore used to fetch post data.
+//
+//KTX (Kotlin Extensions) simplifies the Firestore API.
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore // KTX extension
@@ -14,11 +18,11 @@ import com.google.firebase.ktx.Firebase                 // KTX extension
 
 class FeedActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityFeedBinding
-    private lateinit var foodPostAdapter: FoodPostAdapter
+    private lateinit var binding: ActivityFeedBinding //Connects layout XML.
+    private lateinit var foodPostAdapter: FoodPostAdapter  // Custom adapter for RecyclerView.
     private lateinit var recyclerView: RecyclerView
-    private val foodPostsList = mutableListOf<FoodPost>() // Changed from sampleFoodPosts
-    private lateinit var db: FirebaseFirestore
+    private val foodPostsList = mutableListOf<FoodPost>() //  Dynamic list for posts.
+    private lateinit var db: FirebaseFirestore // Firestore instance.
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,35 +46,22 @@ class FeedActivity : AppCompatActivity() {
         // Fetch data from Firestore
         fetchFoodPostsFromFirestore()
 
-        // Optional: Set up item click listener
-        /*
-        foodPostAdapter.setOnItemClickListener(object : FoodPostAdapter.OnItemClickListener {
-            override fun onItemClick(foodPost: FoodPost) {
-                Toast.makeText(this@FeedActivity, "Clicked: ${foodPost.description}", Toast.LENGTH_SHORT).show()
-            }
-        })
-        */
     }
 
-    // Remove the prepareSampleData() function or keep it commented out for future reference
-    /*
-    private fun prepareSampleData() {
-        // ... your sample data code ...
-    }
-    */
+
 
     private fun fetchFoodPostsFromFirestore() {
-        // Show a progress bar here if you have one
-        // binding.progressBar.visibility = View.VISIBLE
 
-        // Assuming your collection is named "FoodPosts" (case-sensitive)
-        // And you want to order by when it was posted, newest first.
-        // Make sure "postedTimestamp" field exists in your Firestore documents and is a Timestamp/Date or Long.
+
+        //Realtime listener updates whenever Firestore data changes.
+        //Sorts posts by timestamp (newest first).
         db.collection("FoodPosts")
             .orderBy("postedTimestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshots, e ->
                 // binding.progressBar.visibility = View.GONE // Hide progress bar
 
+
+                //Displays error if Firestore fetch fails.
                 if (e != null) {
                     Log.w("FeedActivity", "Listen failed.", e)
                     Toast.makeText(this, "Error fetching posts: ${e.message}", Toast.LENGTH_LONG).show()
@@ -90,6 +81,10 @@ class FeedActivity : AppCompatActivity() {
 
                 // binding.textViewEmpty.visibility = View.GONE // Hide "No posts" message
                 // binding.textViewError.visibility = View.GONE // Hide error message
+
+
+//Converts Firestore documents into FoodPost objects.
+//Updates RecyclerView dynamically.
 
                 val newPosts = mutableListOf<FoodPost>()
                 for (document in snapshots) {
