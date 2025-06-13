@@ -39,6 +39,15 @@
         </com.google.android.material.textfield.TextInputLayout>
 
 
+        <Spinner
+            android:id="@+id/categorySpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:spinnerMode="dropdown"
+            android:padding="8dp"
+            android:background="@android:drawable/btn_dropdown"
+            android:layout_marginTop="8dp" />
+
         <EditText
             android:id="@+id/quantity"
             android:layout_width="match_parent"
@@ -46,6 +55,24 @@
             android:hint="Enter quantity (e.g. 5 plates)"
             android:inputType="text"
             android:layout_marginTop="8dp"/>
+
+        <EditText
+            android:id="@+id/pickupDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Select Pickup Date"
+            android:focusable="false"
+            android:clickable="true" />
+
+        <EditText
+            android:id="@+id/pickupTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Select Pickup Time"
+            android:focusable="false"
+            android:clickable="true" />
+
+
 
 
         <EditText
@@ -58,6 +85,78 @@
             android:layout_marginTop="8dp"/>
 
 
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <EditText
+                android:id="@+id/whatsappNumber"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="Enter WhatsApp Number"
+                android:inputType="phone"/>
+
+            <ImageView
+                android:id="@+id/whatsappIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="whatsapp icon"
+                android:padding="8dp"
+                android:src="@drawable/ic_whatsapp" /> <!-- Put your WhatsApp icon in drawable -->
+
+
+
+
+
+
+        </LinearLayout>
+
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+
+            <EditText
+                android:id="@+id/phoneNumber"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="Enter Phone Number"
+                android:inputType="phone"/>
+
+            <ImageView
+                android:id="@+id/phoneIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="phone icon"
+                android:padding="8dp"
+                android:src="@drawable/phoneicon" /> <!-- Put a phone icon in drawable -->
+
+        </LinearLayout>
+
+
+
+        <EditText
+            android:id="@+id/expiryDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Select Expiry Date"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none" />
 
 
         <Button

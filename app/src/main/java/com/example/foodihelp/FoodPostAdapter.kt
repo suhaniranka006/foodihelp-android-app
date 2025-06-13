@@ -1,41 +1,42 @@
-package com.example.foodihelp // Make sure this matches your package name
+package com.example.foodihelp
 
+import FoodPost
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
-import coil.load // For loading images - make sure you have the Coil dependency
-// If you don't have Coil: import com.bumptech.glide.Glide // For Glide
+import coil.load
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 import java.util.concurrent.TimeUnit
-
-// Make sure your FoodPost data class is imported if it's in a different package
-// import com.example.foodihelp.FoodPost
 
 class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
     RecyclerView.Adapter<FoodPostAdapter.FoodPostViewHolder>() {
 
-    // Interface for click events (optional, but good for handling item clicks)
     interface OnItemClickListener {
         fun onItemClick(foodPost: FoodPost)
     }
+
     private var listener: OnItemClickListener? = null
 
     fun setOnItemClickListener(listener: OnItemClickListener) {
         this.listener = listener
     }
 
-    // ViewHolder class: Holds references to the views for each item
     inner class FoodPostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageViewFood: ImageView = itemView.findViewById(R.id.imageViewItemFood)  ///Image of the food
-        val textViewDescription: TextView = itemView.findViewById(R.id.textViewItemDescription) //Food description
-        val textViewQuantity: TextView = itemView.findViewById(R.id.textViewItemQuantity) //Quantity of food
-        val textViewAddress: TextView = itemView.findViewById(R.id.textViewItemAddress)  //Pickup location
-        val textViewExpiry: TextView = itemView.findViewById(R.id.textViewItemExpiry)  //Human-readable expiry date
+        val imageViewFood: ImageView = itemView.findViewById(R.id.imageViewItemFood)
+        val textViewDescription: TextView = itemView.findViewById(R.id.textViewItemDescription)
+        val textViewQuantity: TextView = itemView.findViewById(R.id.textViewItemQuantity)
+        val textViewAddress: TextView = itemView.findViewById(R.id.textViewItemAddress)
+        val textViewExpiry: TextView = itemView.findViewById(R.id.textViewItemExpiry)
+        val textViewCategory: TextView = itemView.findViewById(R.id.textViewItemCategory)
+        val textViewPickupTime: TextView = itemView.findViewById(R.id.textViewItemPickupTime)
+        val phoneIcon: ImageView = itemView.findViewById(R.id.phoneIcon)
+        val whatsappIcon: ImageView = itemView.findViewById(R.id.whatsappIcon)
+        val claimButton: Button = itemView.findViewById(R.id.buttonClaim)
 
         init {
             itemView.setOnClickListener {
@@ -47,46 +48,37 @@ class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
         }
     }
 
-
-    //Inflates each row (item_food_post.xml) into a ViewHolder
-
-    // Called when RecyclerView needs a new ViewHolder (a new item layout)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FoodPostViewHolder {
         val itemView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_food_post, parent, false) // Inflate your item layout
+            .inflate(R.layout.item_food_post, parent, false)
         return FoodPostViewHolder(itemView)
     }
 
-
-    //Binds data from each FoodPost to the UI widgets
-    // Called by RecyclerView to display the data at the specified position
     override fun onBindViewHolder(holder: FoodPostViewHolder, position: Int) {
         val currentPost = foodPosts[position]
 
-        holder.textViewDescription.text = currentPost.description
-        holder.textViewQuantity.text = currentPost.quantity
-        holder.textViewAddress.text = currentPost.address
+        holder.textViewDescription.text = currentPost.description ?: "No Description"
+        holder.textViewQuantity.text = currentPost.quantity ?: "Quantity: N/A"
+        holder.textViewAddress.text = currentPost.address ?: "Address: N/A"
+        holder.textViewCategory.text = "Category: ${currentPost.category ?: "N/A"}"
+        holder.textViewPickupTime.text = "Pickup Time: ${currentPost.pickupTime ?: "N/A"}"
 
-        // Load image using Coil (or Glide)
+        // Load Image
         if (!currentPost.imageUrl.isNullOrEmpty()) {
-
-            // Uses Coil to load images asynchronously from imageUrl:
             holder.imageViewFood.load(currentPost.imageUrl) {
-                placeholder(R.drawable.ic_placeholder_image) // Add a placeholder drawable
-                error(R.drawable.ic_error_image) // Add an error drawable
+                placeholder(R.drawable.ic_placeholder_image)
+                error(R.drawable.ic_error_image)
             }
         } else {
-            // Set a default image or hide ImageView if no URL
             holder.imageViewFood.setImageResource(R.drawable.ic_placeholder_image)
         }
 
-        // Format and display expiry date
+        // Expiry Date Text
         currentPost.expiryDateTimestamp?.let { timestamp ->
             val expiryDate = Date(timestamp)
             val now = Date()
             val diffInMillis = expiryDate.time - now.time
             val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillis)
-
             val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
 
             holder.textViewExpiry.text = when {
@@ -95,22 +87,39 @@ class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
                 diffInDays == 1L -> "Expires: Tomorrow"
                 else -> "Expires: ${sdf.format(expiryDate)}"
             }
-            // You might want to change text color based on expiry too
-            // e.g., if (diffInDays < 1) holder.textViewExpiry.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.red))
-
         } ?: run {
             holder.textViewExpiry.text = "Expiry: N/A"
         }
+
+        // Phone Click
+        holder.phoneIcon.setOnClickListener {
+            currentPost.phoneNumber?.let { phone ->
+                val intent = Intent(Intent.ACTION_DIAL).apply {
+                    data = Uri.parse("tel:$phone")
+                }
+                holder.itemView.context.startActivity(intent)
+            } ?: Toast.makeText(holder.itemView.context, "Phone number not available", Toast.LENGTH_SHORT).show()
+        }
+
+        // WhatsApp Click
+        holder.whatsappIcon.setOnClickListener {
+            currentPost.whatsappNumber?.let { number ->
+                val uri = Uri.parse("https://wa.me/$number")
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                holder.itemView.context.startActivity(intent)
+            } ?: Toast.makeText(holder.itemView.context, "WhatsApp number not available", Toast.LENGTH_SHORT).show()
+        }
+
+        // Claim Button Click
+        holder.claimButton.setOnClickListener {
+            listener?.onItemClick(currentPost)
+        }
     }
 
-    // Returns the total number of items in the list
     override fun getItemCount() = foodPosts.size
 
-
-    //Replaces old list with new list and refreshes the view
-    // Function to update the list of food posts in the adapter
     fun updateData(newFoodPosts: List<FoodPost>) {
         foodPosts = newFoodPosts
-        notifyDataSetChanged() // Naive update, consider DiffUtil for better performance
+        notifyDataSetChanged()
     }
 }

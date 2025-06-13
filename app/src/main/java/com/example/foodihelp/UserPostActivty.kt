@@ -1,10 +1,14 @@
 package com.example.foodihelp
 
 import android.Manifest
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Intent
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
@@ -21,6 +25,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import java.util.Calendar
 
 class UserPostActivty : AppCompatActivity() {
 
@@ -54,9 +59,13 @@ class UserPostActivty : AppCompatActivity() {
             insets
         }
 
+        // Spinner setup
+        val categories = listOf("Cooked Meal", "Packaged Food", "Grocery", "Fruits", "Vegetables", "Others")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, categories)
+        binding.categorySpinner.adapter = adapter
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Optional: Request location permission to get GPS location (can be removed if not needed)
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
@@ -82,33 +91,101 @@ class UserPostActivty : AppCompatActivity() {
             pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
+        binding.whatsappIcon.setOnClickListener {
+            val number = binding.whatsappNumber.text.toString().trim()
+            if (number.isNotEmpty()) {
+                try {
+                    val url = "https://wa.me/$number"
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.data = Uri.parse(url)
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Unable to open WhatsApp", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(this, "Enter a WhatsApp number", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.phoneIcon.setOnClickListener {
+            val number = binding.phoneNumber.text.toString().trim()
+            if (number.isNotEmpty()) {
+                val intent = Intent(Intent.ACTION_DIAL)
+                intent.data = Uri.parse("tel:$number")
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Enter a phone number", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val calendar = Calendar.getInstance()
+
+        binding.pickupDate.setOnClickListener {
+            val year = calendar.get(Calendar.YEAR)
+            val month = calendar.get(Calendar.MONTH)
+            val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+            val datePicker = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+                binding.pickupDate.setText("$selectedDay/${selectedMonth + 1}/$selectedYear")
+            }, year, month, day)
+
+            datePicker.show()
+        }
+
+        binding.expiryDate.setOnClickListener {
+            val datePicker = DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    binding.expiryDate.setText("$dayOfMonth/${month + 1}/$year")
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
+            datePicker.show()
+        }
+
+        binding.pickupTime.setOnClickListener {
+            val hour = calendar.get(Calendar.HOUR_OF_DAY)
+            val minute = calendar.get(Calendar.MINUTE)
+
+            val timePicker = TimePickerDialog(this, { _, selectedHour, selectedMinute ->
+                binding.pickupTime.setText(String.format("%02d:%02d", selectedHour, selectedMinute))
+            }, hour, minute, true)
+
+            timePicker.show()
+        }
+
         binding.button.setOnClickListener {
             val description = binding.description.text.toString().trim()
             val quantity = binding.quantity.text.toString().trim()
             val manualAddress = binding.manualLocation.text.toString().trim()
+            val selectedCategory = binding.categorySpinner.selectedItem.toString()
+            val phone = binding.phoneNumber.text.toString().trim()
+            val whatsapp = binding.whatsappNumber.text.toString().trim()
+            val pickupDate = binding.pickupDate.text.toString().trim()
+            val pickupTime = binding.pickupTime.text.toString().trim()
+            val expiryDate = binding.expiryDate.text.toString().trim()
 
-            if (description.isEmpty()) {
-                Toast.makeText(this, "Please enter a description.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (quantity.isEmpty()) {
-                Toast.makeText(this, "Please enter quantity.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (manualAddress.isEmpty()) {
-                Toast.makeText(this, "Please enter the pickup address.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (selectedImageUri == null) {
-                Toast.makeText(this, "Please select an image.", Toast.LENGTH_SHORT).show()
+            if (description.isEmpty() || quantity.isEmpty() || manualAddress.isEmpty() || selectedImageUri == null) {
+                Toast.makeText(this, "Please fill all required fields.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             uploadImageToCloudinary(selectedImageUri!!) { imageUrl ->
-                postDataToFirestore(imageUrl, description, quantity, manualAddress, currentLocation)
+                postDataToFirestore(
+                    imageUrl,
+                    description,
+                    quantity,
+                    manualAddress,
+                    selectedCategory,
+                    phone,
+                    whatsapp,
+                    pickupDate,
+                    pickupTime,
+                    expiryDate,
+                    currentLocation
+                )
             }
         }
     }
@@ -164,32 +241,53 @@ class UserPostActivty : AppCompatActivity() {
         description: String,
         quantity: String,
         address: String,
+        category: String,
+        phone: String,
+        whatsapp: String,
+        pickupDate: String,
+        pickupTime: String,
+        expiryDate: String,
         location: Location?
     ) {
-        val foodPost = FoodPost(
-            userId = "guest",
-            userName = "Anonymous",
-            description = description,
-            imageUrl = imageUrl,
-            quantity = quantity,
-            locationLat = location?.latitude,
-            locationLng = location?.longitude,
-            address = address,
-            postedTimestamp = Timestamp.now()
+        val foodPost = hashMapOf(
+            "userId" to "guest",
+            "userName" to "Anonymous",
+            "description" to description,
+            "imageUrl" to imageUrl,
+            "quantity" to quantity,
+            "locationLat" to location?.latitude,
+            "locationLng" to location?.longitude,
+            "address" to address,
+            "category" to category,
+            "phone" to phone,
+            "whatsapp" to whatsapp,
+            "pickupDate" to pickupDate,
+            "pickupTime" to pickupTime,
+            "expiryDate" to expiryDate,
+            "postedTimestamp" to Timestamp.now()
         )
 
         db.collection("FoodPosts")
             .add(foodPost)
             .addOnSuccessListener {
                 Toast.makeText(this, "Post successful!", Toast.LENGTH_SHORT).show()
-                binding.description.text?.clear()
-                binding.quantity.text?.clear()
-                binding.manualLocation.text?.clear()
-                binding.imageView.setImageResource(android.R.drawable.ic_menu_camera)
-                selectedImageUri = null
+                clearForm()
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Post failed: ${it.message}", Toast.LENGTH_LONG).show()
             }
+    }
+
+    private fun clearForm() {
+        binding.description.text?.clear()
+        binding.quantity.text?.clear()
+        binding.manualLocation.text?.clear()
+        binding.phoneNumber.text?.clear()
+        binding.whatsappNumber.text?.clear()
+        binding.pickupDate.text?.clear()
+        binding.pickupTime.text?.clear()
+        binding.expiryDate.text?.clear()
+        binding.imageView.setImageResource(android.R.drawable.ic_menu_camera)
+        selectedImageUri = null
     }
 }
