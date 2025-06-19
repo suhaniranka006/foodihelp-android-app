@@ -1,3 +1,6 @@
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import java.io.Serializable
 
 // In FoodPost.kt
 // Hypothetical FoodPost.kt that WOULD work with your prepareSampleData
@@ -30,6 +33,7 @@
 //}
 
 
+@Parcelize
 data class FoodPost(
     val description: String? = null,
     val quantity: String? = null,
@@ -39,5 +43,6 @@ data class FoodPost(
     val phoneNumber: String? = null,
     val whatsappNumber: String? = null,
     val category: String? = null,
-    val pickupTime: String? = null
-)
+    val pickupTime: String? = null,
+    @Transient var documentId: String? = null
+) : Parcelable

@@ -236,6 +236,9 @@ class UserPostActivty : AppCompatActivity() {
         }.start()
     }
 
+
+
+
     private fun postDataToFirestore(
         imageUrl: String,
         description: String,
@@ -249,6 +252,20 @@ class UserPostActivty : AppCompatActivity() {
         expiryDate: String,
         location: Location?
     ) {
+        val expiryTimestamp = try {
+            val parts = expiryDate.split("/")
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.YEAR, parts[2].toInt())
+            calendar.set(Calendar.MONTH, parts[1].toInt() - 1) // 0-based
+            calendar.set(Calendar.DAY_OF_MONTH, parts[0].toInt())
+            calendar.set(Calendar.HOUR_OF_DAY, 23)
+            calendar.set(Calendar.MINUTE, 59)
+            calendar.set(Calendar.SECOND, 59)
+            calendar.timeInMillis
+        } catch (e: Exception) {
+            null
+        }
+
         val foodPost = hashMapOf(
             "userId" to "guest",
             "userName" to "Anonymous",
@@ -259,11 +276,12 @@ class UserPostActivty : AppCompatActivity() {
             "locationLng" to location?.longitude,
             "address" to address,
             "category" to category,
-            "phone" to phone,
-            "whatsapp" to whatsapp,
+            "phoneNumber" to phone,
+            "whatsappNumber" to whatsapp,
             "pickupDate" to pickupDate,
             "pickupTime" to pickupTime,
-            "expiryDate" to expiryDate,
+            "expiryDate" to expiryDate, // readable
+            "expiryDateTimestamp" to expiryTimestamp, // machine-readable
             "postedTimestamp" to Timestamp.now()
         )
 
@@ -277,6 +295,8 @@ class UserPostActivty : AppCompatActivity() {
                 Toast.makeText(this, "Post failed: ${it.message}", Toast.LENGTH_LONG).show()
             }
     }
+
+
 
     private fun clearForm() {
         binding.description.text?.clear()

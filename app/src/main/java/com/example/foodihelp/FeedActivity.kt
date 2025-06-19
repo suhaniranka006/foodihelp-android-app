@@ -1,8 +1,11 @@
 package com.example.foodihelp
 
 import FoodPost
+import FoodPostAdapter
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,61 +22,87 @@ class FeedActivity : AppCompatActivity() {
     private val foodPostsList = mutableListOf<FoodPost>()
     private lateinit var db: FirebaseFirestore
 
+    private val categoryOptions = listOf("All", "Cooked Meal", "Packaged Food", "Grocery", "Fruits", "Vegetables", "Others")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityFeedBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize Firestore
         db = Firebase.firestore
 
-        // Set up RecyclerView
+        // Set up AutoCompleteTextView for category search
+        val searchAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categoryOptions)
+        binding.autoCompleteCategorySearch.setAdapter(searchAdapter)
+
+        binding.autoCompleteCategorySearch.setOnItemClickListener { parent, _, position, _ ->
+            val selectedCategory = parent.getItemAtPosition(position).toString()
+            fetchFilteredPosts(selectedCategory)
+        }
+
+        // On dismiss or clear
+        binding.autoCompleteCategorySearch.setOnDismissListener {
+            val selectedText = binding.autoCompleteCategorySearch.text.toString().trim()
+            if (selectedText.isEmpty()) {
+                fetchFilteredPosts("All")
+            }
+        }
+
+        // RecyclerView setup
         binding.recyclerViewFeed.layoutManager = LinearLayoutManager(this)
-        foodPostAdapter = FoodPostAdapter(foodPostsList)
+        foodPostAdapter = FoodPostAdapter(
+            foodPostsList,
+            showContactIcons = false,
+            showExpiry = false
+        )
         binding.recyclerViewFeed.adapter = foodPostAdapter
 
-        // Optional: Handle item clicks
         foodPostAdapter.setOnItemClickListener(object : FoodPostAdapter.OnItemClickListener {
             override fun onItemClick(foodPost: FoodPost) {
-                Toast.makeText(this@FeedActivity, "Clicked: ${foodPost.description}", Toast.LENGTH_SHORT).show()
-                // You can also open a detail page or start a claim process here
+                val intent = Intent(this@FeedActivity, PostDetailActivity::class.java)
+                intent.putExtra("foodPost", foodPost)
+                startActivity(intent)
             }
         })
 
-        // Fetch data from Firestore
-        fetchFoodPostsFromFirestore()
+        // Load all posts initially
+        fetchFilteredPosts("All")
     }
 
-    private fun fetchFoodPostsFromFirestore() {
+    private fun fetchFilteredPosts(selectedCategory: String) {
         db.collection("FoodPosts")
             .orderBy("postedTimestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshots, e ->
-                if (e != null) {
-                    Log.w("FeedActivity", "Listen failed.", e)
-                    Toast.makeText(this, "Error fetching posts: ${e.message}", Toast.LENGTH_LONG).show()
-                    return@addSnapshotListener
-                }
-
-                if (snapshots == null || snapshots.isEmpty) {
-                    Log.d("FeedActivity", "No food posts found.")
-                    foodPostsList.clear()
-                    foodPostAdapter.updateData(foodPostsList)
-                    return@addSnapshotListener
-                }
-
-                val newPosts = mutableListOf<FoodPost>()
+            .get()
+            .addOnSuccessListener { snapshots ->
+                val allPosts = mutableListOf<FoodPost>()
                 for (document in snapshots) {
                     try {
                         val foodPost = document.toObject(FoodPost::class.java)
-                        newPosts.add(foodPost)
-                    } catch (ex: Exception) {
-                        Log.e("FeedActivity", "Error converting document to FoodPost: ${document.id}", ex)
+                        foodPost.documentId = document.id
+                        allPosts.add(foodPost)
+                    } catch (e: Exception) {
+                        Log.e("FeedActivity", "Error parsing document", e)
                     }
                 }
 
+                val sortedPosts = if (selectedCategory == "All") {
+                    allPosts
+                } else {
+                    allPosts.sortedWith(
+                        compareByDescending<FoodPost> {
+                            it.category.equals(selectedCategory, ignoreCase = true)
+                        }.thenByDescending {
+                            it.expiryDateTimestamp
+                        }
+                    )
+                }
+
                 foodPostsList.clear()
-                foodPostsList.addAll(newPosts)
+                foodPostsList.addAll(sortedPosts)
                 foodPostAdapter.updateData(foodPostsList)
+
+            }.addOnFailureListener {
+                Toast.makeText(this, "Failed to load posts", Toast.LENGTH_SHORT).show()
             }
     }
 }

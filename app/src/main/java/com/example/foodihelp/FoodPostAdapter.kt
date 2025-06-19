@@ -1,5 +1,3 @@
-package com.example.foodihelp
-
 import FoodPost
 import android.content.Intent
 import android.net.Uri
@@ -9,12 +7,16 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.example.foodihelp.R
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
-    RecyclerView.Adapter<FoodPostAdapter.FoodPostViewHolder>() {
+class FoodPostAdapter(
+    private var foodPosts: List<FoodPost>,
+    private val showContactIcons: Boolean = true,
+    private val showExpiry: Boolean = true
+) : RecyclerView.Adapter<FoodPostAdapter.FoodPostViewHolder>() {
 
     interface OnItemClickListener {
         fun onItemClick(foodPost: FoodPost)
@@ -73,41 +75,53 @@ class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
             holder.imageViewFood.setImageResource(R.drawable.ic_placeholder_image)
         }
 
-        // Expiry Date Text
-        currentPost.expiryDateTimestamp?.let { timestamp ->
-            val expiryDate = Date(timestamp)
-            val now = Date()
-            val diffInMillis = expiryDate.time - now.time
-            val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillis)
-            val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        // Expiry Date Text (shown only if enabled)
+        if (showExpiry) {
+            currentPost.expiryDateTimestamp?.let { timestamp ->
+                val expiryDate = Date(timestamp)
+                val now = Date()
+                val diffInMillis = expiryDate.time - now.time
+                val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillis)
+                val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
 
-            holder.textViewExpiry.text = when {
-                diffInDays < 0 -> "Expired on ${sdf.format(expiryDate)}"
-                diffInDays == 0L -> "Expires: Today"
-                diffInDays == 1L -> "Expires: Tomorrow"
-                else -> "Expires: ${sdf.format(expiryDate)}"
-            }
-        } ?: run {
-            holder.textViewExpiry.text = "Expiry: N/A"
-        }
-
-        // Phone Click
-        holder.phoneIcon.setOnClickListener {
-            currentPost.phoneNumber?.let { phone ->
-                val intent = Intent(Intent.ACTION_DIAL).apply {
-                    data = Uri.parse("tel:$phone")
+                holder.textViewExpiry.text = when {
+                    diffInDays < 0 -> "Expired on ${sdf.format(expiryDate)}"
+                    diffInDays == 0L -> "Expires: Today"
+                    diffInDays == 1L -> "Expires: Tomorrow"
+                    else -> "Expires: ${sdf.format(expiryDate)}"
                 }
-                holder.itemView.context.startActivity(intent)
-            } ?: Toast.makeText(holder.itemView.context, "Phone number not available", Toast.LENGTH_SHORT).show()
+            } ?: run {
+                holder.textViewExpiry.text = "Expiry: N/A"
+            }
+            holder.textViewExpiry.visibility = View.VISIBLE
+        } else {
+            holder.textViewExpiry.visibility = View.GONE
         }
 
-        // WhatsApp Click
-        holder.whatsappIcon.setOnClickListener {
-            currentPost.whatsappNumber?.let { number ->
-                val uri = Uri.parse("https://wa.me/$number")
-                val intent = Intent(Intent.ACTION_VIEW, uri)
-                holder.itemView.context.startActivity(intent)
-            } ?: Toast.makeText(holder.itemView.context, "WhatsApp number not available", Toast.LENGTH_SHORT).show()
+        // Phone Click (visible only if enabled)
+        if (showContactIcons) {
+            holder.phoneIcon.setOnClickListener {
+                currentPost.phoneNumber?.let { phone ->
+                    val intent = Intent(Intent.ACTION_DIAL).apply {
+                        data = Uri.parse("tel:$phone")
+                    }
+                    holder.itemView.context.startActivity(intent)
+                } ?: Toast.makeText(holder.itemView.context, "Phone number not available", Toast.LENGTH_SHORT).show()
+            }
+
+            holder.whatsappIcon.setOnClickListener {
+                currentPost.whatsappNumber?.let { number ->
+                    val uri = Uri.parse("https://wa.me/$number")
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    holder.itemView.context.startActivity(intent)
+                } ?: Toast.makeText(holder.itemView.context, "WhatsApp number not available", Toast.LENGTH_SHORT).show()
+            }
+
+            holder.phoneIcon.visibility = View.VISIBLE
+            holder.whatsappIcon.visibility = View.VISIBLE
+        } else {
+            holder.phoneIcon.visibility = View.GONE
+            holder.whatsappIcon.visibility = View.GONE
         }
 
         // Claim Button Click
@@ -123,3 +137,5 @@ class FoodPostAdapter(private var foodPosts: List<FoodPost>) :
         notifyDataSetChanged()
     }
 }
+
+
