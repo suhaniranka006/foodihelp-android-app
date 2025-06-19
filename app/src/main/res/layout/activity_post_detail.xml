@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:id="@+id/imageViewDetail"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_placeholder_image"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/textViewDescriptionDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textViewCategoryDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Category"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textViewQuantityDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Quantity"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textViewAddressDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Address"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textViewPickupTimeDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pickup Time"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textViewExpiryDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Expiry"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/imageViewPhoneDetail"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="8dp"
+                android:src="@drawable/phoneicon"
+                android:contentDescription="Call"
+                android:layout_marginEnd="24dp" />
+
+            <ImageView
+                android:id="@+id/imageViewWhatsappDetail"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_whatsapp"
+                android:contentDescription="WhatsApp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
