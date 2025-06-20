@@ -15,11 +15,13 @@ import java.util.concurrent.TimeUnit
 class FoodPostAdapter(
     private var foodPosts: List<FoodPost>,
     private val showContactIcons: Boolean = true,
-    private val showExpiry: Boolean = true
+    private val showExpiry: Boolean = true,
+    private val showDeleteButton: Boolean = false
 ) : RecyclerView.Adapter<FoodPostAdapter.FoodPostViewHolder>() {
 
     interface OnItemClickListener {
-        fun onItemClick(foodPost: FoodPost)
+        fun onDeleteClick(foodPost: FoodPost)
+        fun onDetailClick(foodPost: FoodPost)
     }
 
     private var listener: OnItemClickListener? = null
@@ -38,16 +40,7 @@ class FoodPostAdapter(
         val textViewPickupTime: TextView = itemView.findViewById(R.id.textViewItemPickupTime)
         val phoneIcon: ImageView = itemView.findViewById(R.id.phoneIcon)
         val whatsappIcon: ImageView = itemView.findViewById(R.id.whatsappIcon)
-        val claimButton: Button = itemView.findViewById(R.id.buttonClaim)
-
-        init {
-            itemView.setOnClickListener {
-                val position = adapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    listener?.onItemClick(foodPosts[position])
-                }
-            }
-        }
+        val actionButton: Button = itemView.findViewById(R.id.buttonClaim)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FoodPostViewHolder {
@@ -60,12 +53,11 @@ class FoodPostAdapter(
         val currentPost = foodPosts[position]
 
         holder.textViewDescription.text = currentPost.description ?: "No Description"
-        holder.textViewQuantity.text = currentPost.quantity ?: "Quantity: N/A"
-        holder.textViewAddress.text = currentPost.address ?: "Address: N/A"
+        holder.textViewQuantity.text = "Quantity: ${currentPost.quantity ?: "N/A"}"
+        holder.textViewAddress.text = "Address: ${currentPost.address ?: "N/A"}"
         holder.textViewCategory.text = "Category: ${currentPost.category ?: "N/A"}"
         holder.textViewPickupTime.text = "Pickup Time: ${currentPost.pickupTime ?: "N/A"}"
 
-        // Load Image
         if (!currentPost.imageUrl.isNullOrEmpty()) {
             holder.imageViewFood.load(currentPost.imageUrl) {
                 placeholder(R.drawable.ic_placeholder_image)
@@ -75,7 +67,6 @@ class FoodPostAdapter(
             holder.imageViewFood.setImageResource(R.drawable.ic_placeholder_image)
         }
 
-        // Expiry Date Text (shown only if enabled)
         if (showExpiry) {
             currentPost.expiryDateTimestamp?.let { timestamp ->
                 val expiryDate = Date(timestamp)
@@ -98,7 +89,6 @@ class FoodPostAdapter(
             holder.textViewExpiry.visibility = View.GONE
         }
 
-        // Phone Click (visible only if enabled)
         if (showContactIcons) {
             holder.phoneIcon.setOnClickListener {
                 currentPost.phoneNumber?.let { phone ->
@@ -124,18 +114,24 @@ class FoodPostAdapter(
             holder.whatsappIcon.visibility = View.GONE
         }
 
-        // Claim Button Click
-        holder.claimButton.setOnClickListener {
-            listener?.onItemClick(currentPost)
+        // ❗ Main difference: Delete or Go to Details
+        if (showDeleteButton) {
+            holder.actionButton.text = "Delete"
+            holder.actionButton.setOnClickListener {
+                listener?.onDeleteClick(currentPost)
+            }
+        } else {
+            holder.actionButton.text = "Go to Details"
+            holder.actionButton.setOnClickListener {
+                listener?.onDetailClick(currentPost)
+            }
         }
     }
 
-    override fun getItemCount() = foodPosts.size
+    override fun getItemCount(): Int = foodPosts.size
 
     fun updateData(newFoodPosts: List<FoodPost>) {
         foodPosts = newFoodPosts
         notifyDataSetChanged()
     }
 }
-
-

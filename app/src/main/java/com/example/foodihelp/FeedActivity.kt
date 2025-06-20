@@ -31,7 +31,7 @@ class FeedActivity : AppCompatActivity() {
 
         db = Firebase.firestore
 
-        // Set up AutoCompleteTextView for category search
+        // Setup AutoCompleteTextView for category selection
         val searchAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categoryOptions)
         binding.autoCompleteCategorySearch.setAdapter(searchAdapter)
 
@@ -40,7 +40,7 @@ class FeedActivity : AppCompatActivity() {
             fetchFilteredPosts(selectedCategory)
         }
 
-        // On dismiss or clear
+        // Reset to all if search is empty
         binding.autoCompleteCategorySearch.setOnDismissListener {
             val selectedText = binding.autoCompleteCategorySearch.text.toString().trim()
             if (selectedText.isEmpty()) {
@@ -48,24 +48,31 @@ class FeedActivity : AppCompatActivity() {
             }
         }
 
-        // RecyclerView setup
+        // Setup RecyclerView
         binding.recyclerViewFeed.layoutManager = LinearLayoutManager(this)
         foodPostAdapter = FoodPostAdapter(
-            foodPostsList,
+            foodPosts = foodPostsList,
             showContactIcons = false,
-            showExpiry = false
+            showExpiry = false,
+            showDeleteButton = false // no delete in feed
         )
+
         binding.recyclerViewFeed.adapter = foodPostAdapter
 
+        // ✅ Go to Details button action
         foodPostAdapter.setOnItemClickListener(object : FoodPostAdapter.OnItemClickListener {
-            override fun onItemClick(foodPost: FoodPost) {
+            override fun onDeleteClick(foodPost: FoodPost) {
+                // FeedActivity doesn't support delete
+            }
+
+            override fun onDetailClick(foodPost: FoodPost) {
                 val intent = Intent(this@FeedActivity, PostDetailActivity::class.java)
                 intent.putExtra("foodPost", foodPost)
                 startActivity(intent)
             }
         })
 
-        // Load all posts initially
+        // Initial data load
         fetchFilteredPosts("All")
     }
 
